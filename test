@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>資料輸入</title>
+
+<style type="text/css">
+input,textarea {
+   font-family: Arial, Helvetica, sans-serif; 
+   font-size: 16px;
+   color:#0000FF;
+   line-height: 150%;   
+}
+
+button {
+	color: #FFFFFF;
+	font-size: large;
+	text-align: center;
+	background-color: #07BB0A;
+	font-weight: bold;
+}
+
+button:hover {
+    color: #FBEA00;
+	background-color: #BB070A;
+	cursor: pointer;
+}
+</style>
+
+</head>
+
+<body>
+<form method="post" name="userForm">
+   <p><input type="text" name="guest" id="guest" placeholder="姓名"></p>
+   <p><input type="radio" name="gender" value="男" id="gender_0">男&nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="radio" name="gender" value="女" id="gender_1">女</p>
+   <p><input type="text" name="phone" id="phone" placeholder="手機號碼"></p>
+   <p><input type="email" name="email" id="email" size="50" maxlength="50" placeholder="電子郵件"></p>
+   <p><textarea name="msg" id="msg" cols="50" rows="5" placeholder="留言內容"></textarea></p>
+   <p><button id="send" type="button" onClick="c.userForm();" style=" margin-top: 10px;"> 送出資料</button></p>
+</form>
+
+
+<!--  以下寫入Google表單 -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script> 
+        
+<script id="rendered-js" >
+var getUrlString = location.href;
+var url = new URL(getUrlString);
+	
+id='';
+if (getUrlString.indexOf('?')!=-1){
+   id=url.searchParams.get('id');
+}
+	
+c = {};
+
+c.form = document.userForm; //form name
+c.guest = c.form.guest;
+c.gender = c.form.gender;
+c.phone = c.form.phone;
+c.email = c.form.email;
+c.msg = c.form.msg;
+c.send = c.form.send;
+
+c.re_eml = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
+
+c.userForm = function () {
+  errors = '';
+  chk = true;
+
+c.gender = document.querySelector('[name=gender]:checked');
+
+  if (c.guest.value == '') {
+    errors += '請填寫姓名。\n';
+    chk = false;
+  }
+  if (c.phone.value == '') {
+    errors += '請填寫手機號碼。\n';
+    chk = false;
+  }
+  if (c.email.value == '') {
+    errors += '請填寫電子郵件。\n';
+    chk = false;
+  }
+  if (chk) {
+    c.send.innerHTML = '傳送資料中...';
+
+    //date
+    today = new Date();
+    c.time = today.yyyymmddtt();
+
+
+    //database to google sheets
+    url = 'https://script.google.com/macros/s/AKfycbwgsuIHjTa23OFLN4EVYGwVv9z49Mf471KcKsC-xjz2Th7s-WEhQ96fiQTyKW4TtyzKzQ/exec';
+
+    data = {
+      time: c.time,
+      guest: c.guest.value,
+	  gender: c.gender.value,
+      phone: c.phone.value,
+      email: c.email.value,
+	  msg: c.msg.value };
+
+
+    $.post(url, data, function (res) {
+      if (res.success) {
+        // do something...
+      }
+      c.form.reset();
+      c.send.innerHTML = '送出資料';
+      alert(res.msg);
+    });
+  } else {
+    alert(errors);
+    return false;
+  }
+};
+
+Date.prototype.yyyymmddtt = function () {
+  yy = this.getFullYear(),
+  m = this.getMonth() + 1,
+  mm = m < 10 ? '0' + m : m,
+  d = this.getDate(),
+  dd = d < 10 ? '0' + d : d,
+  hh = this.getHours(),
+  ms = this.getMinutes(),
+  ss = this.getSeconds();
+
+  return [yy + "/", mm + "/", dd + " ", hh + ":", ms + ":", ss].join('');
+};
+
+</script>
+
+<!--  以上寫入Google表單 -->
+
+</body>
+</html>
